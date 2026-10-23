@@ -70,7 +70,7 @@
                         <div class="col-lg-7 px-5 text-start">
                             <div class="h-100 d-inline-flex align-items-center py-3 me-4">
                                 <small class="fa fa-map-marker-alt text-primary me-2"></small>
-                                <small>123 Street, New York, USA</small>
+                                <small>Gayatri Nagar, Bhakti Nagar, Rajkot, Gujarat 360002</small>
                             </div>
                             <div class="h-100 d-inline-flex align-items-center py-3">
                                 <small class="far fa-clock text-primary me-2"></small>
@@ -111,7 +111,78 @@
                             <a href="contact.aspx" class="nav-item nav-link">Contact</a>
                         </div>
 
+                        <%
+                            if (Session["CustomerName"] != null)
+                            {
+                        %>
+
+                        <!-- Logged In User -->
+                        <div class="d-flex align-items-center">
+
+                            <span class="me-3"
+                                style="font-weight: 600; color: #0B2B5B; white-space: nowrap;">Welcome <%= Session["CustomerName"].ToString() %>
+                            </span>
+
+                            <div class="dropdown d-none d-lg-block">
+
+                                <a class="btn btn-primary py-4 px-lg-4 dropdown-toggle"
+                                    href="#"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa fa-user me-2"></i>
+                                    Account
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="Profile.aspx">
+                                            <i class="fa fa-user me-2"></i>
+                                            Profile
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="ServiceHistory.aspx">
+                                            <i class="fa fa-history me-2"></i>
+                                            Service History
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="Logout.aspx">
+                                            <i class="fa fa-sign-out-alt me-2"></i>
+                                            Logout
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                        <%
+                            }
+                            else
+                            {
+                        %>
+
+                        <!-- Not Logged In -->
                         <div class="dropdown d-none d-lg-block">
+
                             <a class="btn btn-primary py-4 px-lg-5 dropdown-toggle"
                                 href="#"
                                 role="button"
@@ -119,18 +190,27 @@
                                 aria-expanded="false">Register & Login
                             </a>
 
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
+
                                 <li>
-                                    <a class="dropdown-item" href="Registration.aspx">Register
+                                    <a class="dropdown-item"
+                                        href="Registration.aspx">Register
                                     </a>
                                 </li>
+
                                 <li>
-                                    <a class="dropdown-item" href="Login.aspx">Login
+                                    <a class="dropdown-item"
+                                        href="Login.aspx">Login
                                     </a>
                                 </li>
+
                             </ul>
+
                         </div>
 
+                        <%
+                            }
+                        %>
                     </div>
                 </nav>
                 <!-- Navbar End -->
@@ -468,7 +548,7 @@
                         <div class="row g-5">
                             <div class="col-lg-3 col-md-6">
                                 <h4 class="text-light mb-4">Address</h4>
-                                <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
+                                <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Gayatri Nagar, Bhakti Nagar, Rajkot, Gujarat 360002</p>
                                 <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
                                 <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
                                 <div class="d-flex pt-2">

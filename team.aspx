@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Layout.Master" AutoEventWireup="true" CodeBehind="Registration.aspx.cs" Inherits="VehicleServiceManagementSystem.Registration" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Layout.Master" AutoEventWireup="true" CodeBehind="Registration.aspx.cs" Inherits="VehicleServiceManagementSystem.team" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -87,16 +87,112 @@
             <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="navbar-nav ms-auto p-4 p-lg-0">
-                    <a href="Default.aspx" class="nav-item nav-link active">Home</a>
-                    <a href="about.aspx" class="nav-item nav-link">About</a>
-                    <a href="service.aspx" class="nav-item nav-link">Service</a>
-                    <a href="team.aspx" class="nav-item nav-link">Technician</a>
-                    <a href="contact.aspx" class="nav-item nav-link">Contact</a>
-                </div>
-               
-            </div>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav ms-auto p-4 p-lg-0">
+                            <a href="Default.aspx" class="nav-item nav-link active">Home</a>
+                            <a href="about.aspx" class="nav-item nav-link">About</a>
+                            <a href="service.aspx" class="nav-item nav-link">Service</a>
+                            <a href="team.aspx" class="nav-item nav-link">Technician</a>
+                            <a href="contact.aspx" class="nav-item nav-link">Contact</a>
+                        </div>
+
+                        <%
+                            if (Session["CustomerName"] != null)
+                            {
+                        %>
+
+                        <!-- Logged In User -->
+                        <div class="d-flex align-items-center">
+
+                            <div class="dropdown d-none d-lg-block">
+
+                                <a class="btn btn-primary py-4 px-lg-4 dropdown-toggle"
+                                    href="#"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa fa-user me-2"></i>
+                                    Account
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="Profile.aspx">
+                                            <i class="fa fa-user me-2"></i>
+                                            Profile
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="ServiceHistory.aspx">
+                                            <i class="fa fa-history me-2"></i>
+                                            Service History
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="Logout.aspx">
+                                            <i class="fa fa-sign-out-alt me-2"></i>
+                                            Logout
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                        <%
+                            }
+                            else
+                            {
+                        %>
+
+                        <!-- Not Logged In -->
+                        <div class="dropdown d-none d-lg-block">
+
+                            <a class="btn btn-primary py-4 px-lg-5 dropdown-toggle"
+                                href="#"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">Register & Login
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="Registration.aspx">Register
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="Login.aspx">Login
+                                    </a>
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                        <%
+                            }
+                        %>
+                    </div>
         </nav>
         <!-- Navbar End -->
 

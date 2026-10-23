@@ -11,7 +11,7 @@ namespace VehicleServiceManagementSystem
 {
 
 
-    public partial class Registration
+    public partial class about
     {
     }
 }
