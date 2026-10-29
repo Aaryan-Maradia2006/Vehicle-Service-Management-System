@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -10,53 +11,35 @@ namespace VehicleServiceManagementSystem
 {
     public partial class Registration : System.Web.UI.Page
     {
-        SqlConnection con;
-        SqlCommand cmd;
-        SqlDataAdapter da;
-        DataSet ds;
+        string s = ConfigurationManager.ConnectionStrings["dbcon"].ConnectionString;
 
-        string s = ConfigurationManager
-            .ConnectionStrings["dbcon"]
-            .ConnectionString;
-
-        // PAGE LOAD
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 gridfill();
+                clear();
             }
         }
 
-        // CONNECTION
-        void getcon()
-        {
-            con = new SqlConnection(s);
-            con.Open();
-        }
-
-        // GRID FILL
+        // Show All Customers
         void gridfill()
         {
-            getcon();
+            using (SqlConnection con = new SqlConnection(s))
+            {
+                string query = "SELECT * FROM Customer";
+                SqlDataAdapter da = new SqlDataAdapter(query, con);
 
-            da = new SqlDataAdapter(
-                "SELECT * FROM Customer",
-                con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
 
-            ds = new DataSet();
-            da.Fill(ds);
-
-            GridView1.DataSource = ds;
-            GridView1.DataBind();
-
-            con.Close();
-            da.Dispose();
-            ds.Dispose();
-            con.Dispose();
+                GridView1.DataSource = dt;
+                GridView1.DataBind();
+            }
         }
 
-        // CLEAR FORM
+        // Clear All Fields
         void clear()
         {
             txtName.Text = "";
@@ -74,121 +57,111 @@ namespace VehicleServiceManagementSystem
             btnRegister.Text = "REGISTER";
         }
 
-        // REGISTER / UPDATE
+        // Register or Update
         protected void btnRegister_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtName.Text) ||
-                string.IsNullOrWhiteSpace(txtMobile.Text) ||
-                string.IsNullOrWhiteSpace(txtEmail.Text) ||
-                string.IsNullOrWhiteSpace(txtUsername.Text) ||
-                string.IsNullOrWhiteSpace(txtPassword.Text) ||
-                string.IsNullOrWhiteSpace(txtConfirmPassword.Text))
+            string fullName = txtName.Text.Trim();
+            string mobile = txtMobile.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string vehicleNo = txtVehicleNo.Text.Trim();
+            string brand = txtVehicleBrand.Text.Trim();
+            string model = txtVehicleModel.Text.Trim();
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Text;
+            string confirmPassword = txtConfirmPassword.Text;
+            string address = txtAddress.Text.Trim();
+
+            if (fullName == "" || mobile == "" ||
+                email == "" || username == "" ||
+                password == "" || confirmPassword == "")
             {
-                Response.Write(
-                    "<script>alert('Please fill in all required fields.');</script>");
+                ShowMessage("Please fill in all required fields.");
                 return;
             }
-            else if (txtPassword.Text != txtConfirmPassword.Text)
+
+            if (password != confirmPassword)
             {
-                Response.Write(
-                    "<script>alert('Password and Confirm Password do not match.');</script>");
+                ShowMessage("Password and Confirm Password do not match.");
                 return;
             }
-            else if (btnRegister.Text == "REGISTER")
+
+            using (SqlConnection con = new SqlConnection(s))
             {
-                string fullName = txtName.Text.Trim().Replace("'", "''");
-                string mobile = txtMobile.Text.Trim().Replace("'", "''");
-                string email = txtEmail.Text.Trim().Replace("'", "''");
-                string vehicleNo = txtVehicleNo.Text.Trim().Replace("'", "''");
-                string brand = txtVehicleBrand.Text.Trim().Replace("'", "''");
-                string model = txtVehicleModel.Text.Trim().Replace("'", "''");
-                string username = txtUsername.Text.Trim().Replace("'", "''");
-                string password = txtPassword.Text.Replace("'", "''");
-                string address = txtAddress.Text.Trim().Replace("'", "''");
+                string query;
 
-                getcon();
-
-                string query =
-                    "INSERT INTO Customer " +
-                    "(FullName, Mobile, Email, VehicleNumber, VehicleBrand, VehicleModel, Username, Password, Address) " +
-                    "VALUES ('" + fullName + "','" + mobile + "','" +
-                    email + "','" + vehicleNo + "','" + brand + "','" +
-                    model + "','" + username + "','" + password + "','" +
-                    address + "')";
-
-                cmd = new SqlCommand(query, con);
-                cmd.ExecuteNonQuery();
-
-                con.Close();
-                cmd.Dispose();
-                con.Dispose();
-
-                Response.Write(
-                    "<script>alert('Registration Successful');</script>");
-
-                clear();
-                gridfill();
-            }
-            else if (btnRegister.Text == "UPDATE")
-            {
-                if (ViewState["id"] == null)
+                if (btnRegister.Text == "REGISTER")
                 {
-                    Response.Write(
-                        "<script>alert('Please select Edit first.');</script>");
-                    return;
+                    query = @"INSERT INTO Customer
+                              (FullName, Mobile, Email, VehicleNumber,
+                               VehicleBrand, VehicleModel, Username, Password, Address)
+                              VALUES
+                              (@FullName, @Mobile, @Email, @VehicleNumber,
+                               @VehicleBrand, @VehicleModel, @Username, @Password, @Address)";
+                }
+                else
+                {
+                    if (ViewState["id"] == null)
+                    {
+                        ShowMessage("Please select Edit first.");
+                        return;
+                    }
+
+                    query = @"UPDATE Customer SET
+                              FullName = @FullName,
+                              Mobile = @Mobile,
+                              Email = @Email,
+                              VehicleNumber = @VehicleNumber,
+                              VehicleBrand = @VehicleBrand,
+                              VehicleModel = @VehicleModel,
+                              Username = @Username,
+                              Password = @Password,
+                              Address = @Address
+                              WHERE CustomerId = @CustomerId";
                 }
 
-                int customerId = Convert.ToInt32(ViewState["id"]);
+                SqlCommand cmd = new SqlCommand(query, con);
 
-                string fullName = txtName.Text.Trim().Replace("'", "''");
-                string mobile = txtMobile.Text.Trim().Replace("'", "''");
-                string email = txtEmail.Text.Trim().Replace("'", "''");
-                string vehicleNo = txtVehicleNo.Text.Trim().Replace("'", "''");
-                string brand = txtVehicleBrand.Text.Trim().Replace("'", "''");
-                string model = txtVehicleModel.Text.Trim().Replace("'", "''");
-                string username = txtUsername.Text.Trim().Replace("'", "''");
-                string password = txtPassword.Text.Replace("'", "''");
-                string address = txtAddress.Text.Trim().Replace("'", "''");
+                cmd.Parameters.AddWithValue("@FullName", fullName);
+                cmd.Parameters.AddWithValue("@Mobile", mobile);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@VehicleNumber", vehicleNo);
+                cmd.Parameters.AddWithValue("@VehicleBrand", brand);
+                cmd.Parameters.AddWithValue("@VehicleModel", model);
+                cmd.Parameters.AddWithValue("@Username", username);
+                cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.AddWithValue("@Address", address);
 
-                getcon();
+                if (btnRegister.Text == "UPDATE")
+                {
+                    cmd.Parameters.AddWithValue("@CustomerId",
+                        Convert.ToInt32(ViewState["id"]));
+                }
 
-                string query =
-                    "UPDATE Customer SET " +
-                    "FullName='" + fullName + "'," +
-                    "Mobile='" + mobile + "'," +
-                    "Email='" + email + "'," +
-                    "VehicleNumber='" + vehicleNo + "'," +
-                    "VehicleBrand='" + brand + "'," +
-                    "VehicleModel='" + model + "'," +
-                    "Username='" + username + "'," +
-                    "Password='" + password + "'," +
-                    "Address='" + address + "' " +
-                    "WHERE CustomerId=" + customerId;
-
-                cmd = new SqlCommand(query, con);
+                con.Open();
                 int result = cmd.ExecuteNonQuery();
-
-                con.Close();
-                cmd.Dispose();
-                con.Dispose();
 
                 if (result > 0)
                 {
-                    Response.Write(
-                        "<script>alert('Data Updated Successfully');</script>");
+                    if (btnRegister.Text == "REGISTER")
+                    {
+                        ShowMessage("Registration Successful.");
+                    }
+                    else
+                    {
+                        ShowMessage("Data Updated Successfully.");
+                    }
 
                     clear();
                     gridfill();
                 }
                 else
                 {
-                    Response.Write(
-                        "<script>alert('Update failed. Record not found.');</script>");
+                    ShowMessage("Operation failed. Please try again.");
                 }
             }
         }
 
-        // LOAD SELECTED RECORD
+        // Load Selected Customer Details
         void filldata()
         {
             if (ViewState["id"] == null)
@@ -196,61 +169,35 @@ namespace VehicleServiceManagementSystem
                 return;
             }
 
-            int customerId = Convert.ToInt32(ViewState["id"]);
-
-            getcon();
-
-            da = new SqlDataAdapter(
-                "SELECT * FROM Customer WHERE CustomerId=" + customerId,
-                con);
-
-            ds = new DataSet();
-            da.Fill(ds);
-
-            if (ds.Tables.Count > 0 &&
-                ds.Tables[0].Rows.Count > 0)
+            using (SqlConnection con = new SqlConnection(s))
             {
-                txtName.Text =
-                    ds.Tables[0].Rows[0]["FullName"].ToString();
+                string query = "SELECT * FROM Customer WHERE CustomerId = @CustomerId";
 
-                txtMobile.Text =
-                    ds.Tables[0].Rows[0]["Mobile"].ToString();
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@CustomerId",
+                    Convert.ToInt32(ViewState["id"]));
 
-                txtEmail.Text =
-                    ds.Tables[0].Rows[0]["Email"].ToString();
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
 
-                txtVehicleNo.Text =
-                    ds.Tables[0].Rows[0]["VehicleNumber"].ToString();
-
-                txtVehicleBrand.Text =
-                    ds.Tables[0].Rows[0]["VehicleBrand"].ToString();
-
-                txtVehicleModel.Text =
-                    ds.Tables[0].Rows[0]["VehicleModel"].ToString();
-
-                txtUsername.Text =
-                    ds.Tables[0].Rows[0]["Username"].ToString();
-
-                txtPassword.Text =
-                    ds.Tables[0].Rows[0]["Password"].ToString();
-
-                txtConfirmPassword.Text =
-                    ds.Tables[0].Rows[0]["Password"].ToString();
-
-                txtAddress.Text =
-                    ds.Tables[0].Rows[0]["Address"].ToString();
+                if (dr.Read())
+                {
+                    txtName.Text = dr["FullName"].ToString();
+                    txtMobile.Text = dr["Mobile"].ToString();
+                    txtEmail.Text = dr["Email"].ToString();
+                    txtVehicleNo.Text = dr["VehicleNumber"].ToString();
+                    txtVehicleBrand.Text = dr["VehicleBrand"].ToString();
+                    txtVehicleModel.Text = dr["VehicleModel"].ToString();
+                    txtUsername.Text = dr["Username"].ToString();
+                    txtPassword.Text = dr["Password"].ToString();
+                    txtConfirmPassword.Text = dr["Password"].ToString();
+                    txtAddress.Text = dr["Address"].ToString();
+                }
             }
-
-            con.Close();
-            da.Dispose();
-            ds.Dispose();
-            con.Dispose();
         }
 
-        // GRID EDIT COMMAND
-        protected void GridView1_RowCommand(
-            object sender,
-            GridViewCommandEventArgs e)
+        // GridView Edit Command
+        protected void GridView1_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "cmd_edt")
             {
@@ -259,12 +206,11 @@ namespace VehicleServiceManagementSystem
                 filldata();
                 btnRegister.Text = "UPDATE";
 
-                Response.Write(
-                    "<script>alert('Record Loaded. Make changes and click UPDATE.');</script>");
+                ShowMessage("Record loaded. Make changes and click UPDATE.");
             }
         }
 
-        // UPDATE BUTTON
+        // Update Button
         protected void btnUpdate_Click(object sender, EventArgs e)
         {
             if (ViewState["id"] != null)
@@ -274,54 +220,63 @@ namespace VehicleServiceManagementSystem
             }
             else
             {
-                Response.Write(
-                    "<script>alert('Please select Edit from Registered Details first.');</script>");
+                ShowMessage("Please select Edit from Registered Details first.");
             }
         }
 
-        // DELETE BUTTON
+        // Delete Button
         protected void btnDelete_Click(object sender, EventArgs e)
         {
             if (ViewState["id"] == null)
             {
-                Response.Write(
-                    "<script>alert('Please select Edit from Registered Details first.');</script>");
+                ShowMessage("Please select Edit from Registered Details first.");
                 return;
             }
 
-            int customerId = Convert.ToInt32(ViewState["id"]);
-
-            getcon();
-
-            cmd = new SqlCommand(
-                "DELETE FROM Customer WHERE CustomerId=" + customerId,
-                con);
-
-            int result = cmd.ExecuteNonQuery();
-
-            con.Close();
-            cmd.Dispose();
-            con.Dispose();
-
-            if (result > 0)
+            using (SqlConnection con = new SqlConnection(s))
             {
-                Response.Write(
-                    "<script>alert('Selected User Data Deleted Successfully');</script>");
+                string query = "DELETE FROM Customer WHERE CustomerId = @CustomerId";
 
-                clear();
-                gridfill();
-            }
-            else
-            {
-                Response.Write(
-                    "<script>alert('Record not found.');</script>");
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@CustomerId",
+                    Convert.ToInt32(ViewState["id"]));
+
+                con.Open();
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    ShowMessage("Selected user deleted successfully.");
+                    clear();
+                    gridfill();
+                }
+                else
+                {
+                    ShowMessage("Record not found.");
+                }
             }
         }
 
-        // RESET BUTTON
+        // Reset Button
         protected void btnReset_Click(object sender, EventArgs e)
         {
             clear();
+        }
+
+        // Show Message
+        void ShowMessage(string message)
+        {
+            string safeMessage = message.Replace("\\", "\\\\")
+                                        .Replace("'", "\\'")
+                                        .Replace("\r", "")
+                                        .Replace("\n", "");
+
+            ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "message",
+                "alert('" + safeMessage + "');",
+                true
+            );
         }
     }
 }

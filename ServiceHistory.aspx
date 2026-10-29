@@ -1,45 +1,159 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Layout.Master" AutoEventWireup="true" CodeBehind="ServiceHistory.aspx.cs" Inherits="VehicleServiceManagementSystem.ServiceHistory" %>
+﻿<%@ Page Title="My Service History" Language="C#" MasterPageFile="~/Layout.Master" AutoEventWireup="true" CodeBehind="ServiceHistory.aspx.cs" Inherits="VehicleServiceManagementSystem.ServiceHistory" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
+    <style>
+        .history-page {
+            min-height: 500px;
+            padding: 45px 20px;
+            background: #f5f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .history-container {
+            max-width: 1450px;
+            margin: auto;
+        }
+
+        .history-header {
+            padding: 30px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #ed1233, #b90828);
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(237, 18, 51, 0.15);
+        }
+
+            .history-header h2 {
+                margin: 0 0 10px;
+                color: #ffffff;
+                font-size: 30px;
+                font-weight: 700;
+            }
+
+            .history-header p {
+                margin: 0;
+                color: #ffffff;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+
+        .history-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(20, 40, 80, 0.07);
+            border: 1px solid #e8edf5;
+        }
+
+            .history-card h3 {
+                color: #122f5c;
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px;
+            }
+
+        .history-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        .history-grid {
+            width: 100%;
+            min-width: 1100px;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+
+            .history-grid th {
+                background: #122f5c;
+                color: #ffffff;
+                padding: 16px 14px;
+                text-align: left;
+                white-space: nowrap;
+                font-size: 14px;
+                border: 1px solid #233f6d;
+            }
+
+            .history-grid td {
+                padding: 15px 14px;
+                color: #344563;
+                border: 1px solid #e6ebf2;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+
+            .history-grid tr:nth-child(even) {
+                background: #f8faff;
+            }
+
+            .history-grid tr:hover {
+                background: #fff1f3;
+            }
+
+        .pay-button {
+            background: #138754;
+            color: #ffffff;
+            padding: 9px 18px;
+            border: none;
+            border-radius: 7px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+            .pay-button:hover {
+                background: #0d6c41;
+            }
+
+        .paid-label {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 7px;
+            color: #087443;
+            background: #e5f8ed;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .empty-message {
+            color: #64748b;
+            padding: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .history-page {
+                padding: 25px 10px;
+            }
+
+            .history-header {
+                padding: 22px;
+            }
+
+                .history-header h2 {
+                    font-size: 24px;
+                }
+
+            .history-card {
+                padding: 15px;
+            }
+
+                .history-card h3 {
+                    font-size: 19px;
+                }
+        }
+    </style>
+
 </asp:Content>
 
-<%-- Header --%>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <meta charset="utf-8">
-    <title>CarServ - Car Repair HTML Template</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+</asp:Content>
 
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
 
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@600;700&family=Ubuntu:wght@400;500&display=swap" rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
-
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
-
+<asp:Content ID="Content3" ContentPlaceHolderID="ContentPlaceHolder2" runat="server">
 
     <!-- Topbar Start -->
     <div class="container-fluid bg-light p-0">
@@ -87,109 +201,121 @@
                 <a href="team.aspx" class="nav-item nav-link">Technician</a>
                 <a href="contact.aspx" class="nav-item nav-link">Contact</a>
             </div>
-
-        </div>
     </nav>
     <!-- Navbar End -->
-</asp:Content>
 
-<%-- Contain --%>
-<asp:Content ID="Content3" ContentPlaceHolderID="ContentPlaceHolder2" runat="server">
-    <div class="container py-5">
+    <div class="history-page">
 
-        <div class="card shadow-lg border-0">
+        <div class="history-container">
 
-            <div class="card-header bg-primary text-center py-3">
-
-                <h2 class="text-white mb-0">Service History
-                </h2>
-
+            <div class="history-header">
+                <h2>My Service History</h2>
+                <p>
+                    View your vehicle service details and manage your payments.
+                </p>
             </div>
 
-            <div class="card-body">
+            <div class="history-card">
 
-                <asp:GridView ID="GridView1"
-                    runat="server"
-                    AutoGenerateColumns="False"
-                    CssClass="table table-bordered"
-                    Width="100%"
-                    OnRowCommand="GridView1_RowCommand">
+                <h3>My Service Records</h3>
 
-                    <Columns>
+                <div class="history-table-wrap">
 
-                        <asp:BoundField
-                            DataField="ServiceHistoryId"
-                            HeaderText="Service ID" />
+                    <asp:GridView
+                        ID="GridView1"
+                        runat="server"
+                        AutoGenerateColumns="False"
+                        CssClass="history-grid"
+                        GridLines="None"
+                        OnRowCommand="GridView1_RowCommand"
+                        EmptyDataText="No service records found."
+                        EmptyDataRowStyle-CssClass="empty-message">
 
-                        <asp:BoundField
-                            DataField="CustomerName"
-                            HeaderText="Customer Name" />
+                        <Columns>
 
-                        <asp:BoundField
-                            DataField="Mobile"
-                            HeaderText="Mobile" />
+                            <asp:BoundField
+                                DataField="ServiceHistoryId"
+                                HeaderText="Service ID" />
 
-                        <asp:BoundField
-                            DataField="VehicleNumber"
-                            HeaderText="Vehicle Number" />
+                            <asp:BoundField
+                                DataField="CustomerName"
+                                HeaderText="Customer Name" />
 
-                        <asp:BoundField
-                            DataField="VehicleBrand"
-                            HeaderText="Vehicle Brand" />
+                            <asp:BoundField
+                                DataField="Mobile"
+                                HeaderText="Mobile" />
 
-                        <asp:BoundField
-                            DataField="VehicleModel"
-                            HeaderText="Vehicle Model" />
+                            <asp:BoundField
+                                DataField="VehicleNumber"
+                                HeaderText="Vehicle Number" />
 
-                        <asp:BoundField
-                            DataField="ServiceType"
-                            HeaderText="Service Type" />
+                            <asp:BoundField
+                                DataField="VehicleBrand"
+                                HeaderText="Vehicle Brand" />
 
-                        <asp:BoundField
-                            DataField="BookingDate"
-                            HeaderText="Service Date"
-                            DataFormatString="{0:dd-MM-yyyy}" />
+                            <asp:BoundField
+                                DataField="VehicleModel"
+                                HeaderText="Vehicle Model" />
 
-                        <asp:BoundField
-                            DataField="Status"
-                            HeaderText="Status" />
+                            <asp:BoundField
+                                DataField="ServiceType"
+                                HeaderText="Service Type" />
 
-                        <asp:BoundField
-                            DataField="Amount"
-                            HeaderText="Amount"
-                            DataFormatString="₹{0:0.00}" />
+                            <asp:BoundField
+                                DataField="BookingDate"
+                                HeaderText="Service Date"
+                                DataFormatString="{0:dd-MM-yyyy}"
+                                HtmlEncode="false" />
 
-                        <asp:TemplateField HeaderText="Payment">
-                            <ItemTemplate>
-                                <asp:Button
-                                    ID="btnPay"
-                                    runat="server"
-                                    Text="Pay"
-                                    CssClass="btn btn-success btn-sm"
-                                    CommandName="PayService"
-                                    CommandArgument='<%# Eval("ServiceHistoryId") %>' />
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                    </Columns>
+                            <asp:BoundField
+                                DataField="Amount"
+                                HeaderText="Amount"
+                                DataFormatString="₹{0:0.00}"
+                                HtmlEncode="false" />
 
-                </asp:GridView>
+                            <asp:TemplateField HeaderText="Payment">
+
+                                <ItemTemplate>
+
+                                    <asp:Button
+                                        ID="btnPay"
+                                        runat="server"
+                                        Text="PAY"
+                                        CssClass="pay-button"
+                                        CommandName="PayService"
+                                        CommandArgument='<%# Eval("ServiceHistoryId") %>'
+                                        Visible='<%# !String.Equals(Convert.ToString(Eval("PaymentStatus")), "Paid", StringComparison.OrdinalIgnoreCase) %>'
+                                        CausesValidation="false" />
+
+                                    <asp:Label
+                                        ID="lblPaid"
+                                        runat="server"
+                                        Text="Paid &#10003;"
+                                        CssClass="paid-label"
+                                        Visible='<%# String.Equals(Convert.ToString(Eval("PaymentStatus")), "Paid", StringComparison.OrdinalIgnoreCase) %>' />
+
+                                </ItemTemplate>
+
+                            </asp:TemplateField>
+
+                        </Columns>
+
+                    </asp:GridView>
+
+                </div>
 
             </div>
 
         </div>
 
     </div>
-</asp:Content>
-
-<%-- Footer --%>
-<asp:Content ID="Content4" ContentPlaceHolderID="ContentPlaceHolder3" runat="server">
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
         <div class="container py-5">
             <div class="row g-5">
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Address</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Gayatri Nagar, Bhakti Nagar, Rajkot, Gujarat 360002</p>
                     <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
                     <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
                     <div class="d-flex pt-2">
@@ -247,19 +373,8 @@
         </div>
     </div>
     <!-- Footer End -->
+</asp:Content>
 
 
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
-
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+<asp:Content ID="Content4" ContentPlaceHolderID="ContentPlaceHolder3" runat="server">
 </asp:Content>

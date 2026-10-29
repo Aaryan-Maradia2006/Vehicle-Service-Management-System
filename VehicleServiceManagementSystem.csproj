@@ -115,6 +115,7 @@
     <Content Include="lib\wow\wow.min.js" />
     <Content Include="Login.aspx" />
     <Content Include="Logout.aspx" />
+    <Content Include="MyService.aspx" />
     <Content Include="OnlinePayment.aspx" />
     <Content Include="Payment.aspx" />
     <Content Include="PaymentReceipt.aspx" />
@@ -266,6 +267,13 @@
     </Compile>
     <Compile Include="Logout.aspx.designer.cs">
       <DependentUpon>Logout.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MyService.aspx.cs">
+      <DependentUpon>MyService.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MyService.aspx.designer.cs">
+      <DependentUpon>MyService.aspx</DependentUpon>
     </Compile>
     <Compile Include="OnlinePayment.aspx.cs">
       <DependentUpon>OnlinePayment.aspx</DependentUpon>

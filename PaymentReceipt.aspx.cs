@@ -1,13 +1,14 @@
-﻿using System;
+﻿
+using System;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace VehicleServiceManagementSystem
 {
     public partial class PaymentReceipt : System.Web.UI.Page
     {
-        string s = ConfigurationManager
-            .ConnectionStrings["dbcon"].ConnectionString;
+        string s = ConfigurationManager.ConnectionStrings["dbcon"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -16,129 +17,123 @@ namespace VehicleServiceManagementSystem
                 Response.Redirect("Login.aspx");
                 return;
             }
-            else if (!IsPostBack)
+
+            if (!IsPostBack)
             {
                 LoadReceipt();
             }
         }
 
-        void LoadReceipt()
+        private void LoadReceipt()
         {
-            int paymentId;
+            int serviceId;
 
-            if (!int.TryParse(
-                Request.QueryString["PaymentId"], out paymentId)
-                || paymentId <= 0)
+            if (!int.TryParse(Request.QueryString["ServiceId"], out serviceId)
+                || serviceId <= 0)
             {
-                Response.Redirect("ServiceHistory.aspx");
+                ShowReceiptError("Invalid service ID.");
                 return;
             }
 
-            SqlConnection con = new SqlConnection(s);
+            int customerId = Convert.ToInt32(Session["CustomerId"]);
 
-            string customerName =
-                Convert.ToString(Session["CustomerName"])
-                .Replace("'", "''");
-
-            string query = @"
-                SELECT p.PaymentId, p.TransactionId, p.PaymentDate,
-                       p.PaymentMethod, p.Amount, p.PaymentStatus,
-                       sh.CustomerName, sh.Mobile, sh.VehicleNumber,
-                       sh.VehicleBrand, sh.VehicleModel, sh.ServiceType
-                FROM Payments p
-                INNER JOIN ServiceHistory sh
-                    ON sh.ServiceHistoryId = p.ServiceHistoryId
-                WHERE p.PaymentId = " + paymentId + @"
-                  AND sh.CustomerName = '" + customerName + @"'
-                  AND p.PaymentStatus = 'Success'";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            con.Open();
-
-            SqlDataReader dr = cmd.ExecuteReader();
-
-            if (dr.Read())
+            using (SqlConnection con = new SqlConnection(s))
             {
-                lblReceiptId.Text =
-                    dr["PaymentId"].ToString();
+                string query = @"
+                    SELECT
+                        ServiceHistoryId,
+                        CustomerName,
+                        Mobile,
+                        VehicleNumber,
+                        VehicleBrand,
+                        VehicleModel,
+                        ServiceType,
+                        BookingDate,
+                        Amount,
+                        PaymentStatus
+                    FROM dbo.ServiceHistory
+                    WHERE ServiceHistoryId = @ServiceId
+                      AND CustomerId = @CustomerId
+                      AND PaymentStatus = 'Paid'";
 
-                lblTransaction.Text =
-                    Server.HtmlEncode(
-                        dr["TransactionId"].ToString());
-
-                if (dr["PaymentDate"] != DBNull.Value)
+                using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    lblDate.Text =
-                        Convert.ToDateTime(dr["PaymentDate"])
-                        .ToString("dd-MM-yyyy hh:mm tt");
+                    cmd.Parameters.Add("@ServiceId", SqlDbType.Int).Value = serviceId;
+                    cmd.Parameters.Add("@CustomerId", SqlDbType.Int).Value = customerId;
+
+                    con.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (!dr.Read())
+                        {
+                            ShowReceiptError(
+                                "Receipt is unavailable. Please check your payment status.");
+                            return;
+                        }
+
+                        lblReceiptId.Text =
+                            "VSMS-" + dr["ServiceHistoryId"].ToString();
+
+                        // Demo reference, not a real payment gateway transaction ID
+                        lblTransaction.Text =
+                            "DEMO-" + dr["ServiceHistoryId"].ToString();
+
+                        if (dr["BookingDate"] != DBNull.Value)
+                        {
+                            lblDate.Text =
+                                Convert.ToDateTime(dr["BookingDate"])
+                                    .ToString("dd-MM-yyyy");
+                        }
+                        else
+                        {
+                            lblDate.Text = DateTime.Now.ToString("dd-MM-yyyy");
+                        }
+
+                        lblCustomer.Text =
+                            Server.HtmlEncode(Convert.ToString(dr["CustomerName"]));
+
+                        lblMobile.Text =
+                            Server.HtmlEncode(Convert.ToString(dr["Mobile"]));
+
+                        lblVehicle.Text =
+                            Server.HtmlEncode(Convert.ToString(dr["VehicleNumber"]));
+
+                        lblVehicleModel.Text =
+                            Server.HtmlEncode(
+                                Convert.ToString(dr["VehicleBrand"]) + " " +
+                                Convert.ToString(dr["VehicleModel"]));
+
+                        lblService.Text =
+                            Server.HtmlEncode(Convert.ToString(dr["ServiceType"]));
+
+                        lblMethod.Text = "Demo Payment";
+
+                        decimal amount = 0;
+
+                        if (dr["Amount"] != DBNull.Value)
+                        {
+                            amount = Convert.ToDecimal(dr["Amount"]);
+                        }
+
+                        lblAmount.Text = "₹" + amount.ToString("0.00");
+
+                        lblStatus.Text = "Paid";
+                        lblStatus.ForeColor = System.Drawing.Color.Green;
+                    }
                 }
-                else if (dr["PaymentDate"] == DBNull.Value)
-                {
-                    lblDate.Text = "N/A";
-                }
-
-                lblCustomer.Text =
-                    Server.HtmlEncode(
-                        dr["CustomerName"].ToString());
-
-                lblMobile.Text =
-                    Server.HtmlEncode(
-                        dr["Mobile"].ToString());
-
-                lblVehicle.Text =
-                    Server.HtmlEncode(
-                        dr["VehicleNumber"].ToString());
-
-                lblVehicleModel.Text =
-                    Server.HtmlEncode(
-                        dr["VehicleBrand"].ToString() + " " +
-                        dr["VehicleModel"].ToString());
-
-                lblService.Text =
-                    Server.HtmlEncode(
-                        dr["ServiceType"].ToString());
-
-                lblMethod.Text =
-                    Server.HtmlEncode(
-                        dr["PaymentMethod"].ToString());
-
-                if (dr["Amount"] != DBNull.Value)
-                {
-                    lblAmount.Text =
-                        "₹" +
-                        Convert.ToDecimal(dr["Amount"])
-                        .ToString("0.00");
-                }
-                else if (dr["Amount"] == DBNull.Value)
-                {
-                    lblAmount.Text = "₹0.00";
-                }
-
-                lblStatus.Text =
-                    Server.HtmlEncode(
-                        dr["PaymentStatus"].ToString());
-
-                lblStatus.ForeColor =
-                    System.Drawing.Color.Green;
             }
-            else if (!dr.Read())
-            {
-                dr.Close();
-                con.Close();
+        }
 
-                cmd.Dispose();
-                con.Dispose();
+        private void ShowReceiptError(string message)
+        {
+            lblStatus.Text = "Not Confirmed";
+            lblStatus.ForeColor = System.Drawing.Color.Red;
 
-                Response.Redirect("ServiceHistory.aspx");
-                return;
-            }
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
 
-            dr.Close();
-            con.Close();
-
-            cmd.Dispose();
-            con.Dispose();
+            lnkHistory.Visible = true;
         }
     }
 }

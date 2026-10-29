@@ -2,16 +2,18 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace VehicleServiceManagementSystem
 {
     public partial class ServiceHistory : System.Web.UI.Page
     {
+        string s = ConfigurationManager.ConnectionStrings["dbcon"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            // User login karelo che ke nahi check karo
-            if (Session["CustomerName"] == null)
+            if (Session["CustomerId"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
@@ -23,89 +25,116 @@ namespace VehicleServiceManagementSystem
             }
         }
 
-        // =========================================
-        // LOAD LOGGED-IN USER SERVICE HISTORY
-        // =========================================
-        private void LoadServiceHistory()
+        // Show logged-in customer's service history
+        void LoadServiceHistory()
         {
-            try
+            int customerId = Convert.ToInt32(Session["CustomerId"]);
+
+            using (SqlConnection con = new SqlConnection(s))
             {
-                string customerName = Session["CustomerName"].ToString();
+                string query = @"
+                    SELECT ServiceHistoryId,
+                           CustomerName,
+                           Mobile,
+                           VehicleNumber,
+                           VehicleBrand,
+                           VehicleModel,
+                           ServiceType,
+                           BookingDate,
+                           Amount,
+                           PaymentStatus
+                    FROM dbo.ServiceHistory
+                    WHERE CustomerId = @CustomerId
+                    ORDER BY ServiceHistoryId DESC";
 
-                string cs = ConfigurationManager
-                    .ConnectionStrings["dbcon"]
-                    .ConnectionString;
-
-                using (SqlConnection con = new SqlConnection(cs))
+                using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    string query = @"
-                        SELECT
-                            ServiceHistoryId,
-                            CustomerName,
-                            Mobile,
-                            VehicleNumber,
-                            VehicleBrand,
-                            VehicleModel,
-                            ServiceType,
-                            BookingDate,
-                            Status,
-                            Amount
-                        FROM ServiceHistory
-                        WHERE CustomerName = @CustomerName
-                        ORDER BY ServiceHistoryId DESC";
+                    cmd.Parameters.Add("@CustomerId", SqlDbType.Int).Value = customerId;
 
-                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                     {
-                        cmd.Parameters.AddWithValue(
-                            "@CustomerName",
-                            customerName
-                        );
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
 
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            DataTable dt = new DataTable();
-
-                            da.Fill(dt);
-
-                            GridView1.DataSource = dt;
-                            GridView1.DataBind();
-                        }
+                        GridView1.DataSource = dt;
+                        GridView1.DataBind();
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Response.Write(
-                    "<script>alert('Error: " +
-                    Server.HtmlEncode(ex.Message) +
-                    "');</script>"
-                );
-            }
         }
 
+        // Handle PAY button
         protected void GridView1_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "PayService")
             {
-                // Check login
-                if (Session["CustomerName"] == null)
+                if (Session["CustomerId"] == null)
                 {
-                    ClientScript.RegisterStartupScript(
-                        this.GetType(),
-                        "LoginMessage",
-                        "alert('Please login first to make payment.');",
-                        true
-                    );
-
+                    Response.Redirect("Login.aspx");
                     return;
                 }
 
-                // Get Service ID
-                string serviceId = e.CommandArgument.ToString();
+                int serviceId;
 
-                // Go to Payment Page
-                Response.Redirect("Payment.aspx?ServiceId=" + serviceId);
+                if (!int.TryParse(Convert.ToString(e.CommandArgument), out serviceId))
+                {
+                    ShowMessage("Invalid service ID.");
+                    return;
+                }
+
+                int customerId = Convert.ToInt32(Session["CustomerId"]);
+
+                using (SqlConnection con = new SqlConnection(s))
+                {
+                    string query = @"
+                        SELECT PaymentStatus
+                        FROM dbo.ServiceHistory
+                        WHERE ServiceHistoryId = @ServiceId
+                          AND CustomerId = @CustomerId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.Add("@ServiceId", SqlDbType.Int).Value = serviceId;
+                        cmd.Parameters.Add("@CustomerId", SqlDbType.Int).Value = customerId;
+
+                        con.Open();
+
+                        object result = cmd.ExecuteScalar();
+
+                        if (result == null || result == DBNull.Value)
+                        {
+                            ShowMessage("Service record was not found.");
+                            return;
+                        }
+
+                        string paymentStatus = result.ToString();
+
+                        if (paymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ShowMessage("This service has already been paid.");
+                            LoadServiceHistory();
+                            return;
+                        }
+
+                        Response.Redirect("Payment.aspx?ServiceId=" + serviceId);
+                    }
+                }
             }
+        }
+
+        void ShowMessage(string message)
+        {
+            string safeMessage = message.Replace("\\", "\\\\")
+                                        .Replace("'", "\\'")
+                                        .Replace("\r", "")
+                                        .Replace("\n", "");
+
+            ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "HistoryMessage",
+                "alert('" + safeMessage + "');",
+                true
+            );
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -7,9 +8,7 @@ namespace VehicleServiceManagementSystem
 {
     public partial class AdminVehicle : System.Web.UI.Page
     {
-        string s = ConfigurationManager
-            .ConnectionStrings["dbcon"]
-            .ConnectionString;
+        string s = ConfigurationManager.ConnectionStrings["dbcon"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -17,39 +16,35 @@ namespace VehicleServiceManagementSystem
             {
                 LoadVehicles("");
             }
-            else if (IsPostBack)
-            {
-                // No action required.
-            }
         }
 
         private void LoadVehicles(string search)
         {
             SqlConnection con = new SqlConnection(s);
 
-            search = search.Replace("'", "''");
+            string query = @"SELECT CustomerId, FullName, Mobile,
+                             VehicleNumber, VehicleBrand, VehicleModel
+                             FROM Customer";
 
-            string query = @"
-                SELECT
-                    CustomerId,
-                    FullName,
-                    Mobile,
-                    VehicleNumber,
-                    VehicleBrand,
-                    VehicleModel
-                FROM Customer
-                WHERE
-                    '" + search + @"' = ''
-                    OR CAST(CustomerId AS NVARCHAR(20))
-                        LIKE '%" + search + @"%'
-                    OR FullName LIKE '%" + search + @"%'
-                    OR Mobile LIKE '%" + search + @"%'
-                    OR VehicleNumber LIKE '%" + search + @"%'
-                    OR VehicleBrand LIKE '%" + search + @"%'
-                    OR VehicleModel LIKE '%" + search + @"%'
-                ORDER BY CustomerId DESC";
+            if (search != "")
+            {
+                query += @" WHERE CAST(CustomerId AS NVARCHAR(20)) LIKE @Search
+                            OR FullName LIKE @Search
+                            OR Mobile LIKE @Search
+                            OR VehicleNumber LIKE @Search
+                            OR VehicleBrand LIKE @Search
+                            OR VehicleModel LIKE @Search";
+            }
+
+            query += " ORDER BY CustomerId ASC";
 
             SqlCommand cmd = new SqlCommand(query, con);
+
+            if (search != "")
+            {
+                cmd.Parameters.AddWithValue("@Search", "%" + search + "%");
+            }
+
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
 
@@ -60,16 +55,8 @@ namespace VehicleServiceManagementSystem
 
             lblTotalVehicles.Text = dt.Rows.Count.ToString();
 
-            lblMessage.ForeColor =
-                System.Drawing.Color.DarkGreen;
-
-            lblMessage.Text =
-                "Records found: " + dt.Rows.Count;
-
-            da.Dispose();
-            cmd.Dispose();
-            con.Close();
-            con.Dispose();
+            lblMessage.ForeColor = System.Drawing.Color.DarkGreen;
+            lblMessage.Text = "Records found: " + dt.Rows.Count;
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
